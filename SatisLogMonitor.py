@@ -62,7 +62,7 @@ class SatisfactoryLogMonitor(FileSystemEventHandler):
         RetryMoreLines = 2
         RestartAll = 3
 
-    def __init__(self, game_log_path, steamcmd_install_dir):
+    def __init__(self, game_log_path, steamcmd_install_dir=None):
         logger.info("--------- initializing -----------")
         logger.info("logs monitoring path is set to : {}".format(game_log_path))
         self._game_log_path = game_log_path
@@ -307,6 +307,9 @@ class SatisfactoryLogMonitor(FileSystemEventHandler):
         logger.debug("Known actives IPs : {}".format(", ".join(list(self._known_active_players_ips))))
 
     def run_steamcmd_check_game_update(self):
+        if not self._steam_install_dir:
+            logger.warning("Steamcmd path not set")
+            return
         logger.info("Steam checking for game updates")
         gameid = "1690800"
         command_args = [os.path.join(self._steam_install_dir, "steamcmd.sh"), "+login", "anonymous",
@@ -385,6 +388,7 @@ class SatisfactoryLogMonitor(FileSystemEventHandler):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-lp', '--log-path', dest='log_path', type=str)
+    parser.add_argument('--steamcmd', dest='steamcmd_path', type=str)
 
     parser.add_argument('-up', '--steam-update', dest='steam_update', action="store_true")
 
@@ -401,7 +405,7 @@ if __name__ == '__main__':
     if args.very_verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    monitor = SatisfactoryLogMonitor(args.log_path)
+    monitor = SatisfactoryLogMonitor(args.log_path, args.steamcmd_path)
     if args.log_path:
         monitor.start_monitoring()
     if args.steam_update:
